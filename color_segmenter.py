@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 
-
 import cv2
 import argparse
+import json
 import numpy as np
 from functools import partial
 
-'''def escolhamodo():
+def escolhamodo():
     # funcao para escolher os modos
     esc_modo = argparse.ArgumentParser(description="escolhe modo de canis")
     esc_modo.add_argument('-hvs', help="moda para o modo hvs", action="store_true")
+    esc_modo.add_argument('--mostraCor', help="mostra a cor isolada", action="store_true")
     arg_list=vars(esc_modo.parse_args())
 
-    return arg_list['hvs']'''
-
-#def onTrackbar(nada,image, windon_name):
- #   cv2.imshow(windon_name, image)
-  #  print (nada)
+    return arg_list
 
 
 def nothing(x):
@@ -24,7 +21,8 @@ def nothing(x):
 
 def main():
 
-    #escolha=escolhamodo()
+    escolha=escolhamodo()
+
 
     windon_name='segmentacao'
 
@@ -32,8 +30,10 @@ def main():
     cv2.namedWindow(windon_name, cv2.WINDOW_AUTOSIZE)
 
 
-    #if escolha:
-     #   image=cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+
+
+    # criar as trackbar para escolha dos valores
     cv2.createTrackbar('min B/H', windon_name, 0, 255, nothing)
     cv2.createTrackbar('max B/H', windon_name, 0, 255, nothing)
     cv2.createTrackbar('min G/S', windon_name, 0, 255, nothing)
@@ -41,14 +41,18 @@ def main():
     cv2.createTrackbar('min R/V', windon_name, 0, 255, nothing)
     cv2.createTrackbar('max R/V', windon_name, 0, 255, nothing)
 
-    #myOnTracbar = partial(onTrackbar, image=image, windon_name=windon_name)
-    # criar as varias trackbar
+
+
     while True:
+
         _, frame = cap.read()
 
-        grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # vou buscar o valor das variaveis
+        if escolha["hvs"]:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # vou buscar o valor defenidos nas trackbar
         minB_H=cv2.getTrackbarPos('min B/H', windon_name)
         maxB_H = cv2.getTrackbarPos('max B/H', windon_name)
         minG_S = cv2.getTrackbarPos('min G/S', windon_name)
@@ -57,47 +61,35 @@ def main():
         maxR_V = cv2.getTrackbarPos('max R/V', windon_name)
 
 
-        #separo a imaguem nos varios canais
-        image_b, image_g, image_r = cv2.split(frame)
-
-        image_np_threshold_b= image_b>minB_H #& image_b<maxB_H
-        image_np_threshold_r = (image_g > minG_S) #& (image_g < maxG_S)
-        image_np_threshold_g = (image_r > minR_V) #& (image_r < maxR_V)
+        # cria matriz com os limites sinferior e superiors
+        lim_inf= np.array([minB_H,minG_S,minR_V])
+        lim_sup=np.array([maxB_H,maxG_S,maxR_V])
 
 
+        # aplica um treshold com esse limites
+        mask=cv2.inRange(frame, lim_inf, lim_sup)
 
+        if escolha["mostraCor"]:
+            # caso quera imprimir nao mostrando a cor mesmo real
+            cv2.imshow(windon_name, frame)
+        else:
+            # para imprimir caso queira isolar a cor e mostrando
+            frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
+            cv2.imshow(windon_name, frame_com_cor)
 
-
-        new_image_b = image_np_threshold_b.astype(np.uint8)*255
-
-        new_image_g = image_np_threshold_g.astype(np.uint8)*255
-
-        new_image_r = image_np_threshold_r.astype(np.uint8)*255
-
-
-        new_image = cv2.merge((new_image_b,new_image_r,new_image_g))
-
-        new_image_tresh = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
-
-        _, blackAndWhiteFrame = cv2.threshold(new_image_tresh, 0, 255, cv2.THRESH_BINARY)
-
-
-        cv2.imshow(windon_name, blackAndWhiteFrame)
-
-
-# brincadeira para ver se dava com o treshold
-    #image_b, image_g, image_r=cv2.split(image)
-    #_, image_b_trs=cv2.threshold(image_b,50,255, cv2.THRESH_BINARY)
-    #_, image_g_trs = cv2.threshold(image_g, 50, 255, cv2.THRESH_BINARY)
-    #_, image_r_trs = cv2.threshold(image_r, 50, 255, cv2.THRESH_BINARY)
-
-
-    #new_image=cv2.merge((image_b_trs,image_g_trs,image_r_trs))
-    #cv2.imshow(windon_name,new_image)
 
         key=cv2.waitKey(1)
-        #if key==27:
-         #   break
+        if key==27:
+            break
+    print (minG_S)
+    dic_limite={minB_H, minG_S, minG_S, maxB_H, maxG_S, maxR_V}
+
+    print(dic_limite)
+
+    file_name = 'limits.json'
+    with open(file_name, 'w') as file_handle:
+        print('writing dictionary Limites to file ' + file_name)
+        json.dump(dic_limite, file_handle)  # Limits is a dictionary
 
 
 if __name__ == '__main__':

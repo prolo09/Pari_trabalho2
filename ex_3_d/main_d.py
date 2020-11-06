@@ -7,12 +7,12 @@ from functools import partial
 
 def main():
 
-    Limites = {'B' : {'max' : 200, 'min' : 100},
-               'G' : {'max' : 200, 'min' : 100},
-               'R' : {'max' : 200, 'min' : 100}}
+    Limites = {'B' : {'max' : 255, 'min' : 0},
+               'G' : {'max' : 255, 'min' : 0},
+               'R' : {'max' : 255, 'min' : 0}}
 
     window_name = 'segmentacao'
-    image_path = "/home/alex/PycharmProjects/PARI/Parte05/images/atlascar.png"
+    image_path = "../ex_3_d/atlascar.png"
     img = cv2.imread(image_path, 1)
     cv2.namedWindow(window_name)
 
@@ -25,12 +25,12 @@ def main():
     Rmax = partial(pd.TB_Rmax, ImageBGR=img, window=window_name,limits=Limites)
 
 
-    cv2.createTrackbar('Min B', window_name, 128, 255, Bmin)
-    cv2.createTrackbar('Max B', window_name, 128, 255, Bmax)
-    cv2.createTrackbar('Min G', window_name, 128, 255, Gmin)
-    cv2.createTrackbar('Max G', window_name, 128, 255, Gmax)
-    cv2.createTrackbar('Min R', window_name, 128, 255, Rmin)
-    cv2.createTrackbar('Max R', window_name, 128, 255, Rmax)
+    cv2.createTrackbar('Min B', window_name, 0, 255, Bmin)
+    cv2.createTrackbar('Max B', window_name, 0, 255, Bmax)
+    cv2.createTrackbar('Min G', window_name, 0, 255, Gmin)
+    cv2.createTrackbar('Max G', window_name, 0, 255, Gmax)
+    cv2.createTrackbar('Min R', window_name, 0, 255, Rmin)
+    cv2.createTrackbar('Max R', window_name, 0, 255, Rmax)
 
     cv2.imshow(window_name,img)
     cv2.waitKey(0)
