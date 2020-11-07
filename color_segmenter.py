@@ -4,7 +4,7 @@ import cv2
 import argparse
 import json
 import numpy as np
-from functools import partial
+
 
 def escolhamodo():
     # funcao para escolher os modos
@@ -12,7 +12,6 @@ def escolhamodo():
     esc_modo.add_argument('-hsv', help="moda para o modo hvs", action="store_true")
     esc_modo.add_argument('--mostraCor', help="mostra a cor isolada", action="store_true")
     arg_list=vars(esc_modo.parse_args())
-
     return arg_list
 
 
@@ -84,18 +83,23 @@ def main():
         key=cv2.waitKey(1)
         if key==113:
             break
+        elif key==119:
+            dic_limite = dict(G={'max': maxG_S, 'min': minG_S},
+                              R={'max': maxR_V, 'min': minR_V},
+                              B={'max': maxB_H, 'min': minB_H})
 
-    dic_limite=dict(G={'max': maxG_S, 'min': minG_S},
-                    R={'max':maxR_V, 'min':minR_V},
-                    B={'max':maxB_H, 'min':minB_H})
+            file_name = 'limits.json'
+            with open(file_name, 'w') as file_handle:
+                print('writing dictionary Limites to file ' + file_name)
+                json.dump(dic_limite, file_handle)
+            break
 
 
-    print(dic_limite)
 
-    file_name = 'limits.json'
-    with open(file_name, 'w') as file_handle:
-        print('writing dictionary Limites to file ' + file_name)
-        json.dump(dic_limite, file_handle)
+
+
+
+
 
 
 if __name__ == '__main__':
