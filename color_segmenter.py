@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 
+
 def escolhamodo():
     # funcao para escolher os modos
     esc_modo = argparse.ArgumentParser(description="escolhe modo de canis")
@@ -84,9 +85,12 @@ def main():
         if key==113:
             break
         elif key==119:
-            dic_limite = dict(G={'max': maxG_S, 'min': minG_S},
-                              R={'max': maxR_V, 'min': minR_V},
-                              B={'max': maxB_H, 'min': minB_H})
+            dic_limite = dict(B={'max': maxB_H, 'min': minB_H},
+                              G={'max': maxG_S, 'min': minG_S},
+                              R={'max': maxR_V, 'min': minR_V})
+
+
+
 
             file_name = 'limits.json'
             with open(file_name, 'w') as file_handle:
