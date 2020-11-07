@@ -9,7 +9,7 @@ from functools import partial
 def escolhamodo():
     # funcao para escolher os modos
     esc_modo = argparse.ArgumentParser(description="escolhe modo de canis")
-    esc_modo.add_argument('-hvs', help="moda para o modo hvs", action="store_true")
+    esc_modo.add_argument('-hsv', help="moda para o modo hvs", action="store_true")
     esc_modo.add_argument('--mostraCor', help="mostra a cor isolada", action="store_true")
     arg_list=vars(esc_modo.parse_args())
 
@@ -49,8 +49,9 @@ def main():
 
         #grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        if escolha["hvs"]:
+        if escolha["hsv"]:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
 
         # vou buscar o valor defenidos nas trackbar
         minB_H=cv2.getTrackbarPos('min B/H', windon_name)
@@ -71,25 +72,27 @@ def main():
 
         if escolha["mostraCor"]:
             # caso quera imprimir nao mostrando a cor mesmo real
-            cv2.imshow(windon_name, frame)
+
+            frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
+            cv2.imshow('jdj', mask)
+            cv2.imshow(windon_name, frame_com_cor)
         else:
             # para imprimir caso queira isolar a cor e mostrando
-            frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
-            cv2.imshow(windon_name, frame_com_cor)
+            cv2.imshow(windon_name, mask)
 
 
         key=cv2.waitKey(1)
         if key==27:
             break
-    print (minG_S)
-    dic_limite={minB_H, minG_S, minG_S, maxB_H, maxG_S, maxR_V}
 
-    print(dic_limite)
+    #dic_limite={minB_H, minG_S, minG_S, maxB_H, maxG_S, maxR_V}
 
-    file_name = 'limits.json'
-    with open(file_name, 'w') as file_handle:
-        print('writing dictionary Limites to file ' + file_name)
-        json.dump(dic_limite, file_handle)  # Limits is a dictionary
+    #print(dic_limite)
+
+    #file_name = 'limits.json'
+    #with open(file_name, 'w') as file_handle:
+       # print('writing dictionary Limites to file ' + file_name)
+        #json.dump(dic_limite, file_handle)  # Limits is a dictionary
 
 
 if __name__ == '__main__':
