@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-
-#jbskjdb
 import argparse
 import readchar
 import cv2
