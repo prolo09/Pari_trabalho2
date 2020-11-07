@@ -82,17 +82,20 @@ def main():
 
 
         key=cv2.waitKey(1)
-        if key==27:
+        if key==113:
             break
 
-    #dic_limite={minB_H, minG_S, minG_S, maxB_H, maxG_S, maxR_V}
+    dic_limite=dict(G={'max': maxG_S, 'min': minG_S},
+                    R={'max':maxR_V, 'min':minR_V},
+                    B={'max':maxB_H, 'min':minB_H})
 
-    #print(dic_limite)
 
-    #file_name = 'limits.json'
-    #with open(file_name, 'w') as file_handle:
-       # print('writing dictionary Limites to file ' + file_name)
-        #json.dump(dic_limite, file_handle)  # Limits is a dictionary
+    print(dic_limite)
+
+    file_name = 'limits.json'
+    with open(file_name, 'w') as file_handle:
+        print('writing dictionary Limites to file ' + file_name)
+        json.dump(dic_limite, file_handle)
 
 
 if __name__ == '__main__':
