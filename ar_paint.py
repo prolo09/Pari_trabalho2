@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+
+#jbskjdb
 import argparse
 import readchar
 import cv2
@@ -14,6 +16,7 @@ def escolhamodo():
     return args
 
 def instrucoes():
+    # lista de instrucoes
     print("!! PARI AR Paint !!")
     print("Here's some commands:")
     print("- QUIT          -> PRESS 'q'")
