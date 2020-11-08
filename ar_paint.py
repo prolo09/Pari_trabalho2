@@ -140,7 +140,7 @@ def main():
 
 
             cv2.imshow('tela', tela)
-            cv2.putText(frame, text, (40, 40), 1, 3, (255, 255, 255))
+            cv2.putText(frame, text, (40, 40), 1, 3, color)
             cv2.imshow(name, frame)
             cv2.imshow('ff', mask)
             c = cv2.waitKey(1)
