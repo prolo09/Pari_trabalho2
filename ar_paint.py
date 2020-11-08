@@ -13,6 +13,7 @@ tela = np.ones([500, 500, 3], 'uint8') * 255
 color=(255,0,0)
 raio=10
 XY=[]
+XY_ant=[(0,0)]
 
 
 
@@ -80,17 +81,25 @@ def contornos(mask, frame):
 
 
             XY.append((X_cm,Y_cm))
+            XY_ant.append((ponto_ini[0],ponto_ini[1]))
 
-            for i in XY:
-                cv2.circle(frame, (int(i[0]), int(i[1])), 10, (0, 255, 0), -1)
 
-            return X_cm, Y_cm
+
+            for i in range(len(XY)):
+
+                cv2.line(frame, (XY[i][0],XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
+
 
         else:
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
-            for i in XY:
-                cv2.circle(frame, (int(i[0]), int(i[1])), 10, (0, 255, 0), -1)
+            for i in range(len(XY)):
+
+                cv2.line(frame, (XY[i][0],XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
+    else:
+        for i in range(len(XY)):
+            cv2.line(frame, (XY[i][0], XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
+
 
 
 
