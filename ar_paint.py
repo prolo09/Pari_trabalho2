@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-
+from colorama import Fore,Back,Style
 import argparse
-import readchar
 import cv2
 import json
 import numpy as np
@@ -26,19 +25,20 @@ def escolhamodo():
 
 
 def instrucoes():
-    # Command list
-    print('''
-    !! PARI AR PAINT !!
-    Here are some commands u can use:
-    - RED PAINT     -> PRESS 'r'
-    - GREEN PAINT   -> PRESS 'g'
-    - BLUE PAINT    -> PRESS 'b'
-    - THICKER BRUSH -> PRESS '+'
-    - THINNER BRUSH -> PRESS '-'
-    - SAVE          -> PRESS 'w'
-    - CLEAR         -> PRESS 'c'
-    - QUIT          -> PRESS 'q'          
-    ''')
+    # lista de instrucoes
+    start = "\033[1m"
+    end = "\033[0;0m"
+    print("!! PARI AR Paint !!")
+    print("Here's some commands:")
+    print("- TO QUIT       "+u"\U000026D4"+"    -> PRESS 'q'")
+    print("- TO CLEAR            -> PRESS 'c'")
+    print("- TO SAVE       "+u"\U0001f4be"+"    -> PRESS 'w'")
+    print("- RED PAINT   " + Back.RED + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.RED+"'r'"+Fore.RESET )
+    print("- GREEN PAINT " + Back.GREEN + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.GREEN+"'g'"+Fore.RESET )
+    print("- BLUE PAINT  " + Back.BLUE + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.BLUE+"'b'"+Fore.RESET )
+    print(start + "- THICKER BRUSH "+ u"\U0001F58C"+ end + "    -> PRESS '"+start+"+"+end+"'")
+    print("- THINNER BRUSH "+ u"\U0001F58C"+"    -> PRESS '-'")
+
 
 
 def main():

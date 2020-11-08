@@ -31,6 +31,9 @@ def nothing(x):
 
 def main():
     escolha = escolhamodo()
+    print("Welcome to Color Segmenter, here are some commands to help you ")
+    print("- TO QUIT       " + u"\U000026D4" + "    -> PRESS 'q'")
+    print("- TO SAVE       " + u"\U0001f4be" + "    -> PRESS 'w'")
 
     windon_name = 'segmentacao'
     cap = cv2.VideoCapture(0)
