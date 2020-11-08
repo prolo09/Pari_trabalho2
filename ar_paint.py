@@ -50,31 +50,34 @@ def contornos(mask, frame):
 
     if len(contours) != 0:
 
-        areamax=100
 
-        #for cnt in contours:
 
         c = max(contours, key=cv2.contourArea)
-            #area=cv2.contourArea(c)
-            #if area>areamax:
-             #   areamax=area
+        area=cv2.contourArea(c)
 
-        x, y, w, h = cv2.boundingRect(c)
+        if area>300:
 
-        #centroide
-        X_cm = x + w / 2
-        Y_cm = y + h / 2
 
-        cv2.circle(frame, (X_cm, Y_cm), 10, (0, 255, 0), -1)
+            x, y, w, h = cv2.boundingRect(c)
 
-        global tela, ponto_ini
+            #centroide
+            X_cm = x + w / 2
+            Y_cm = y + h / 2
 
-        cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), (255, 0, 0), 10)
-        ponto_ini = (X_cm, Y_cm)
+            cv2.circle(frame, (X_cm, Y_cm), 10, (0, 255, 0), -1)
 
-        return X_cm, Y_cm
-    else:
-        pass
+            global tela, ponto_ini
+
+            cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), (255, 0, 0), 10)
+            ponto_ini = (X_cm, Y_cm)
+
+            return X_cm, Y_cm
+
+        else:
+            text_aviso='aproxime da camara o objeto'
+            cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
+
+
 
 
 def main():
@@ -101,7 +104,10 @@ def main():
 
 
             # aplica o limites e cria uma mascara
-            mask = cv2.inRange(frame, lim_inf, lim_sup)
+            mask_orige = cv2.inRange(frame, lim_inf, lim_sup)
+
+            filtro = np.ones((3, 3), np.uint8)
+            mask = cv2.morphologyEx(mask_orige, cv2.MORPH_OPEN, filtro)
 
             # encotra o bloco maior
             contornos(mask,frame)
