@@ -4,10 +4,14 @@ import argparse
 import cv2
 import json
 import numpy as np
+import datetime
+from time import ctime
 
 # variaveis globais
 ponto_ini = [0, 0]
 tela = np.ones([500, 500, 3], 'uint8') * 255
+color=(255,0,0)
+raio=10
 
 
 
@@ -68,7 +72,7 @@ def contornos(mask, frame):
 
             global tela, ponto_ini
 
-            cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), (255, 0, 0), 10)
+            cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
             ponto_ini = (X_cm, Y_cm)
 
             return X_cm, Y_cm
@@ -95,7 +99,7 @@ def main():
 
         text = 'Azul'
         while True:
-
+            global color, raio, tela
             _, frame = cap.read()
 
             # vai buscar os valore dos limites
@@ -108,6 +112,7 @@ def main():
 
             filtro = np.ones((3, 3), np.uint8)
             mask = cv2.morphologyEx(mask_orige, cv2.MORPH_OPEN, filtro)
+            #mask= cv2.morphologyEx(mask, cv2.MORPH_CLOSE,filtro)
 
             # encotra o bloco maior
             contornos(mask,frame)
@@ -123,31 +128,35 @@ def main():
 
             if c == 114:  # Prime 'r' para riscar red
                 text = 'red'
-                print ('red')
+                color=(0,0,255)
                 del c
 
             elif c == 103:  # Prime 'g' para riscar green
-                print ('green')
+                text= 'green'
+                color=(0,255,0)
                 del c
 
             elif c == 98:  # Prime 'b' para riscar blue
-                print ('blue')
+                text='blue'
+                color=(255,0,0)
                 del c
 
             elif c == 43:  # Prime '+' para aumentar largura de risco
-                print ('larger')
+                raio+=1
                 del c
 
             elif c == 45:  # Prime '-' para diminuir largura de risco
-                print ('thinner')
+                if raio>1:
+                    raio-=1
                 del c
 
             elif c == 99:  # Prime 'c' para limpar a tela
-                print ('clear')
+                tela = np.ones([500, 500, 3], 'uint8') * 255
                 del c
 
             elif c == 119:  # Prime 'w' para guardar sketch
-                print ('save')
+                x = datetime.datetime.today()
+                cv2.imwrite( 'drawing_'+x.strftime("%a_%b_%d_%H:%M:%S_%Y")+'.png', tela)
                 del c
 
             elif c == 113:  # Prime 'q' para sair
