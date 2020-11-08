@@ -10,6 +10,7 @@ ponto_ini = [0, 0]
 tela = np.ones([500, 500, 3], 'uint8') * 255
 
 
+
 def escolhamodo():
     parser = argparse.ArgumentParser(description="PARI AR Paint")
     parser.add_argument('-js',
@@ -43,6 +44,38 @@ def instrucoes():
     print("if u wanna see this tab again, just press 'H'")
 
 
+def contornos(mask, frame):
+
+    _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    if len(contours) != 0:
+
+        areamax=100
+
+        #for cnt in contours:
+
+        c = max(contours, key=cv2.contourArea)
+            #area=cv2.contourArea(c)
+            #if area>areamax:
+             #   areamax=area
+
+        x, y, w, h = cv2.boundingRect(c)
+
+        #centroide
+        X_cm = x + w / 2
+        Y_cm = y + h / 2
+
+        cv2.circle(frame, (X_cm, Y_cm), 10, (0, 255, 0), -1)
+
+        global tela, ponto_ini
+
+        cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), (255, 0, 0), 10)
+        ponto_ini = (X_cm, Y_cm)
+
+        return X_cm, Y_cm
+    else:
+        pass
+
 
 def main():
     escolha = escolhamodo()
@@ -59,32 +92,20 @@ def main():
 
         text = 'Azul'
         while True:
-            # c = readchar.readkey()
+
             _, frame = cap.read()
 
             # vai buscar os valore dos limites
             lim_inf = np.array([int(limites['B']['min']), int(limites['G']['min']), int(limites['R']['min'])])
             lim_sup = np.array([int(limites['B']['max']), int(limites['G']['max']), int(limites['R']['max'])])
 
+
             # aplica o limites e cria uma mascara
             mask = cv2.inRange(frame, lim_inf, lim_sup)
 
             # encotra o bloco maior
+            contornos(mask,frame)
 
-            _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-            if len(contours) != 0:
-                global tela, ponto_ini
-                c = max(contours, key=cv2.contourArea)
-                x, y, w, h = cv2.boundingRect(c)
-
-                X_cm = x + w / 2
-                Y_cm = y + h / 2
-
-                # cv2.circle(frame,(X_cm,Y_cm),10,(0,255,0), -1)
-
-                cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), (255, 0, 0), 10)
-                ponto_ini = (X_cm, Y_cm)
 
             cv2.imshow('tela', tela)
             cv2.putText(frame, text, (40, 40), 1, 3, (255, 255, 255))
