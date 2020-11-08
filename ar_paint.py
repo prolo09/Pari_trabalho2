@@ -12,6 +12,7 @@ ponto_ini = [0, 0]
 tela = np.ones([500, 500, 3], 'uint8') * 255
 color=(255,0,0)
 raio=10
+XY=[]
 
 
 
@@ -72,14 +73,24 @@ def contornos(mask, frame):
 
             global tela, ponto_ini
 
+
+
             cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
             ponto_ini = (X_cm, Y_cm)
+
+
+            XY.append((X_cm,Y_cm))
+
+            for i in XY:
+                cv2.circle(frame, (int(i[0]), int(i[1])), 10, (0, 255, 0), -1)
 
             return X_cm, Y_cm
 
         else:
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
+            for i in XY:
+                cv2.circle(frame, (int(i[0]), int(i[1])), 10, (0, 255, 0), -1)
 
 
 
@@ -116,6 +127,7 @@ def main():
 
             # encotra o bloco maior
             contornos(mask,frame)
+
 
 
             cv2.imshow('tela', tela)
