@@ -40,19 +40,21 @@ def main():
     print("- TO SAVE       " + u"\U0001f4be" + "    -> PRESS 'w'")
 
     windon_name = 'segmentacao'
+    Window_original='Original'
     cap = cv2.VideoCapture(0)
     cv2.namedWindow(windon_name, cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow(Window_original,cv2.WINDOW_AUTOSIZE)
 
     # criar as trackbar para escolha dos valores
-    cv2.createTrackbar('min B/H', windon_name, 0, 255, nothing)
-    cv2.createTrackbar('max B/H', windon_name, 0, 255, nothing)
-    cv2.createTrackbar('min G/S', windon_name, 0, 255, nothing)
-    cv2.createTrackbar('max G/S', windon_name, 0, 255, nothing)
-    cv2.createTrackbar('min R/V', windon_name, 0, 255, nothing)
-    cv2.createTrackbar('max R/V', windon_name, 0, 255, nothing)
+    cv2.createTrackbar('min B/H', windon_name, 100, 255, nothing)
+    cv2.createTrackbar('max B/H', windon_name, 200, 255, nothing)
+    cv2.createTrackbar('min G/S', windon_name, 100, 255, nothing)
+    cv2.createTrackbar('max G/S', windon_name, 200, 255, nothing)
+    cv2.createTrackbar('min R/V', windon_name, 100, 255, nothing)
+    cv2.createTrackbar('max R/V', windon_name, 200, 255, nothing)
 
     while True:
-
+        _, og = cap.read()
         _, frame = cap.read()
 
         if escolha["hsv"]:
@@ -79,9 +81,11 @@ def main():
             frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
             cv2.imshow('jdj', mask)
             cv2.imshow(windon_name, frame_com_cor)
+            cv2.imshow(Window_original,og)
         else:
             # para imprimir caso queira isolar a cor e mostrando
             cv2.imshow(windon_name, mask)
+            cv2.imshow(Window_original, og)
 
         key = cv2.waitKey(1)
         if key == 113:

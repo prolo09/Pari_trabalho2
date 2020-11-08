@@ -32,12 +32,12 @@ def instrucoes():
     -------------------------
     !!  AR_PAINT COMMAND LIST !!
     -------------------------''')
-    print("- TO QUIT       "+u"\U000026D4"+"    -> PRESS 'q'")
-    print("- TO CLEAR            -> PRESS 'c'")
-    print("- TO SAVE       "+u"\U0001f4be"+"    -> PRESS 'w'")
-    print("- RED PAINT   " + Back.RED + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.RED+"'r'"+Fore.RESET )
-    print("- GREEN PAINT " + Back.GREEN + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.GREEN+"'g'"+Fore.RESET )
-    print("- BLUE PAINT  " + Back.BLUE + "      "+ Style.RESET_ALL +"  -> PRESS "+ Fore.BLUE+"'b'"+Fore.RESET )
+    print("- TO QUIT       "+u"\U000026D4"+"   -> PRESS 'q'")
+    print("- TO CLEAR           -> PRESS 'c'")
+    print("- TO SAVE       "+u"\U0001f4be"+"   -> PRESS 'w'")
+    print("- RED PAINT   " + Back.RED + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.RED+"'r'"+Fore.RESET )
+    print("- GREEN PAINT " + Back.GREEN + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.GREEN+"'g'"+Fore.RESET )
+    print("- BLUE PAINT  " + Back.BLUE + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.BLUE+"'b'"+Fore.RESET )
     print(start + "- THICKER BRUSH "+ u"\U0001F58C"+ end + "    -> PRESS '"+start+"+"+end+"'")
     print("- THINNER BRUSH "+ u"\U0001F58C"+"    -> PRESS '-'")
     print("if u wanna see this tab again, just press 'H'")
