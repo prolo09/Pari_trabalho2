@@ -95,13 +95,13 @@ def contornos(mask, frame, tela , tela_preta):
         else:
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
-            fr=frame
+
+            fr=frame # substituir isto
             return fr
 
     else:
-        fr=frame
+        fr=frame # substituir istp
         return fr
-
 
 
 
