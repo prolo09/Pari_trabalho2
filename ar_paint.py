@@ -9,11 +9,10 @@ from time import ctime
 
 # variaveis globais
 ponto_ini = [0, 0]
-tela = np.ones([500, 500, 3], 'uint8') * 255
 color=(255,0,0)
 raio=10
-XY=[]
-XY_ant=[(0,0)]
+
+
 
 
 
@@ -50,7 +49,7 @@ def instrucoes():
     print("if u wanna see this tab again, just press 'H'")
 
 
-def contornos(mask, frame):
+def contornos(mask, frame, tela , tela_preta):
 
     _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -72,33 +71,42 @@ def contornos(mask, frame):
 
             cv2.circle(frame, (X_cm, Y_cm), 10, (0, 255, 0), -1)
 
-            global tela, ponto_ini
+            global  ponto_ini
 
 
 
             cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
+            cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
             ponto_ini = (X_cm, Y_cm)
 
+            aux = cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
+            gray_tela_preta = cv2.cvtColor(aux, cv2.COLOR_BGR2GRAY)
+            _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
+            invert_th = cv2.bitwise_not(th)
+            fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+            fr = cv2.add(fr, aux)
 
-            XY.append((X_cm,Y_cm))
-            XY_ant.append((ponto_ini[0],ponto_ini[1]))
+
+            return fr
 
 
-
-            for i in range(len(XY)):
-
-                cv2.line(frame, (XY[i][0],XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
 
 
         else:
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
-            for i in range(len(XY)):
+            fr=frame
+            return fr
 
-                cv2.line(frame, (XY[i][0],XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
     else:
-        for i in range(len(XY)):
-            cv2.line(frame, (XY[i][0], XY[i][1]), (XY_ant[i][0], XY_ant[i][1]), color, raio)
+        fr=frame
+        return fr
+
+
+
+
+
+
 
 
 
@@ -117,10 +125,16 @@ def main():
         name = 'AR_Paint'
         cv2.namedWindow(name, cv2.WINDOW_AUTOSIZE)
 
+        tela=None
+        tela_preta=None
+
         text = 'Azul'
         while True:
-            global color, raio, tela
+            global color, raio
             _, frame = cap.read()
+
+            if tela is None: tela = np.ones(frame.shape, dtype=np.uint8)*255
+            if tela_preta is None: tela_preta = np.zeros(frame.shape, dtype=np.uint8)
 
             # vai buscar os valore dos limites
             lim_inf = np.array([int(limites['B']['min']), int(limites['G']['min']), int(limites['R']['min'])])
@@ -135,11 +149,12 @@ def main():
             #mask= cv2.morphologyEx(mask, cv2.MORPH_CLOSE,filtro)
 
             # encotra o bloco maior
-            contornos(mask,frame)
+            fr=contornos(mask,frame,tela, tela_preta)
 
 
-
+            cv2.imshow('wwww',fr)
             cv2.imshow('tela', tela)
+            cv2.imshow('telaP', tela_preta)
             cv2.putText(frame, text, (40, 40), 1, 3, color)
             cv2.imshow(name, frame)
             cv2.imshow('ff', mask)
