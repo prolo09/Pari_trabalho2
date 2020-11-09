@@ -17,7 +17,8 @@ def escolhamodo():
     esc_modo = argparse.ArgumentParser(description="escolhe modo de canis")
     esc_modo.add_argument('-hsv',
                           help="moda para o modo hvs", action="store_true")
-    esc_modo.add_argument('--mostraCor',
+    esc_modo.add_argument('-mc',
+                          '--mostraCor',
                           help="mostra a cor isolada",
                           action="store_true")
     arg_list = vars(esc_modo.parse_args())
@@ -79,7 +80,7 @@ def main():
             # caso quera imprimir nao mostrando a cor mesmo real
 
             frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
-            cv2.imshow('jdj', mask)
+            cv2.imshow('Threshold', mask)
             cv2.imshow(windon_name, frame_com_cor)
             cv2.imshow(Window_original,og)
         else:
@@ -98,7 +99,7 @@ def main():
             file_name = 'limits.json'
             with open(file_name, 'w') as file_handle:
                 print('writing dictionary Limites to file ' + file_name)
-                json.dump(dic_limite, file_handle)
+                json.dump(dic_limite, file_handle , indent=4)
             break
 
 
