@@ -8,7 +8,7 @@ import datetime
 from time import ctime
 
 # variaveis globais
-ponto_ini = [0, 0]
+ponto_ini = [None, None]
 color=(255,0,0)
 raio=10
 
@@ -21,6 +21,14 @@ def escolhamodo():
     parser.add_argument('-js',
                         '--json',
                         help="Full path to json file",
+                        action="store_true")
+    parser.add_argument('-usp',
+                        '--use_shake_prevention',
+                        help="Detects when you don't want to draw.",
+                        action="store_true")
+    parser.add_argument('-video',
+                        '--draw_on_video',
+                        help="List of commands",
                         action="store_true")
     parser.add_argument('-info',
                         '--more_info',
@@ -38,29 +46,27 @@ def instrucoes():
     -------------------------
     !!  AR_PAINT COMMAND LIST !!
     -------------------------''')
-    print("- TO QUIT       "+u"\U000026D4"+"   -> PRESS 'q'")
+    print("- TO QUIT       "+u"\U000026D4"+"    -> PRESS 'q'")
     print("- TO CLEAR           -> PRESS 'c'")
     print("- TO SAVE       "+u"\U0001f4be"+"   -> PRESS 'w'")
     print("- RED PAINT   " + Back.RED + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.RED+"'r'"+Fore.RESET )
     print("- GREEN PAINT " + Back.GREEN + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.GREEN+"'g'"+Fore.RESET )
     print("- BLUE PAINT  " + Back.BLUE + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.BLUE+"'b'"+Fore.RESET )
-    print(start + "- THICKER BRUSH "+ u"\U0001F58C"+ end + "    -> PRESS '"+start+"+"+end+"'")
-    print("- THINNER BRUSH "+ u"\U0001F58C"+"    -> PRESS '-'")
+    print(start + "- THICKER BRUSH "+ u"\U0001F58C"+ end + "   -> PRESS '"+start+"+"+end+"'")
+    print("- THINNER BRUSH "+ u"\U0001F58C"+"   -> PRESS '-'")
     print("if u wanna see this tab again, just press 'H'")
 
 
-def contornos(mask, frame, tela , tela_preta):
+def contornos(mask, frame, tela , tela_preta, escolha):
 
     _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) != 0:
 
-
-
         c = max(contours, key=cv2.contourArea)
         area=cv2.contourArea(c)
 
-        if area>300:
+        if area>250:
 
 
             x, y, w, h = cv2.boundingRect(c)
@@ -73,11 +79,15 @@ def contornos(mask, frame, tela , tela_preta):
 
             global  ponto_ini
 
+            if ponto_ini[0] != None:
+
+                cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
+                cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
+                ponto_ini = [X_cm, Y_cm]
+            else:
+                ponto_ini = [X_cm, Y_cm]
 
 
-            cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
-            cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
-            ponto_ini = (X_cm, Y_cm)
 
             aux = cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
             gray_tela_preta = cv2.cvtColor(aux, cv2.COLOR_BGR2GRAY)
@@ -89,26 +99,39 @@ def contornos(mask, frame, tela , tela_preta):
 
             return fr
 
-
-
-
         else:
+            global ponto_ini
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
 
-            fr=frame # substituir isto
+            gray_tela_preta = cv2.cvtColor(tela_preta, cv2.COLOR_BGR2GRAY)
+            _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
+            invert_th = cv2.bitwise_not(th)
+            fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+            fr = cv2.add(fr, tela_preta)
+            if escolha['use_shake_prevention']:
+                ponto_ini = [None, None]
+            else:
+                ponto_ini = ponto_ini
+
             return fr
 
     else:
-        fr=frame # substituir istp
+        global ponto_ini
+        text_aviso = 'coloque o objeto no campo de visao da camara'
+        cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
+
+        gray_tela_preta = cv2.cvtColor(tela_preta, cv2.COLOR_BGR2GRAY)
+        _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
+        invert_th = cv2.bitwise_not(th)
+        fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+        fr = cv2.add(fr, tela_preta)
+        if escolha['use_shake_prevention']:
+            ponto_ini = [None, None]
+        else:
+            ponto_ini = ponto_ini
+
         return fr
-
-
-
-
-
-
-
 
 
 
@@ -149,12 +172,14 @@ def main():
             #mask= cv2.morphologyEx(mask, cv2.MORPH_CLOSE,filtro)
 
             # encotra o bloco maior
-            fr=contornos(mask,frame,tela, tela_preta)
+            fr=contornos(mask,frame,tela, tela_preta,escolha)
 
 
-            cv2.imshow('wwww',fr)
-            cv2.imshow('tela', tela)
-            cv2.imshow('telaP', tela_preta)
+            if escolha['draw_on_video']:
+                cv2.imshow('wwww',fr)   # video desenhado
+            else:
+                cv2.imshow('tela', tela)
+
             cv2.putText(frame, text, (40, 40), 1, 3, color)
             cv2.imshow(name, frame)
             cv2.imshow('ff', mask)
@@ -188,11 +213,15 @@ def main():
 
             elif c == 99:  # Prime 'c' para limpar a tela
                 tela = np.ones([500, 500, 3], 'uint8') * 255
+                tela_preta = np.zeros(frame.shape, 'uint8') * 255
                 del c
 
             elif c == 119:  # Prime 'w' para guardar sketch
                 x = datetime.datetime.today()
-                cv2.imwrite( 'drawing_'+x.strftime("%a_%b_%d_%H:%M:%S_%Y")+'.png', tela)
+                if escolha['draw_on_video']:
+                    cv2.imwrite( 'drawing_'+x.strftime("%a_%b_%d_%H:%M:%S_%Y")+'.png', fr)
+                else:
+                    cv2.imwrite('drawing_' + x.strftime("%a_%b_%d_%H:%M:%S_%Y") + '.png', tela)
                 del c
 
             elif c == 113:  # Prime 'q' para sair
