@@ -47,7 +47,8 @@ def instrucoes():
     !!  AR_PAINT COMMAND LIST !!
     -------------------------''')
     print("- TO QUIT       "+u"\U000026D4"+"    -> PRESS 'q'")
-    print("- TO CLEAR           -> PRESS 'c'")
+    print("- TO CLEAR      "+u"\U0001F195"+"   -> PRESS 'c'")
+    print("- TO ERASE      "+u"\U0000274E"+"    -> PRESS 'e'")
     print("- TO SAVE       "+u"\U0001f4be"+"   -> PRESS 'w'")
     print("- RED PAINT   " + Back.RED + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.RED+"'r'"+Fore.RESET )
     print("- GREEN PAINT " + Back.GREEN + "      "+ Style.RESET_ALL +" -> PRESS "+ Fore.GREEN+"'g'"+Fore.RESET )
@@ -75,7 +76,7 @@ def contornos(mask, frame, tela , tela_preta, escolha):
             X_cm = x + w / 2
             Y_cm = y + h / 2
 
-            cv2.circle(frame, (X_cm, Y_cm), 10, (0, 255, 0), -1)
+            cv2.circle(frame, (X_cm, Y_cm), raio, (0, 255, 255), -1)
 
             global  ponto_ini
 
@@ -96,9 +97,7 @@ def contornos(mask, frame, tela , tela_preta, escolha):
             fr = cv2.bitwise_and(frame, frame, mask=invert_th)
             fr = cv2.add(fr, aux)
 
-
             return fr
-
         else:
             global ponto_ini
             text_aviso='aproxime da camara o objeto'
@@ -115,7 +114,6 @@ def contornos(mask, frame, tela , tela_preta, escolha):
                 ponto_ini = ponto_ini
 
             return fr
-
     else:
         global ponto_ini
         text_aviso = 'coloque o objeto no campo de visao da camara'
@@ -133,8 +131,6 @@ def contornos(mask, frame, tela , tela_preta, escolha):
 
         return fr
 
-
-
 def main():
     escolha = escolhamodo()
 
@@ -145,7 +141,7 @@ def main():
         limites = json.load(open("limits.json"))
 
         cap = cv2.VideoCapture(0)
-        name = 'AR_Paint'
+        name = 'Original'
         cv2.namedWindow(name, cv2.WINDOW_AUTOSIZE)
 
         tela=None
@@ -155,6 +151,7 @@ def main():
         while True:
             global color, raio
             _, frame = cap.read()
+            frame = cv2.flip(frame , 1)
 
             if tela is None: tela = np.ones(frame.shape, dtype=np.uint8)*255
             if tela_preta is None: tela_preta = np.zeros(frame.shape, dtype=np.uint8)
@@ -176,13 +173,13 @@ def main():
 
 
             if escolha['draw_on_video']:
-                cv2.imshow('wwww',fr)   # video desenhado
+                cv2.imshow('AR_Paint',fr)   # video desenhado
             else:
                 cv2.imshow('tela', tela)
 
             cv2.putText(frame, text, (40, 40), 1, 3, color)
             cv2.imshow(name, frame)
-            cv2.imshow('ff', mask)
+            cv2.imshow('Threshold', mask)
             c = cv2.waitKey(1)
 
             # Criar mask onde se pinta
@@ -216,6 +213,15 @@ def main():
                 tela_preta = np.zeros(frame.shape, 'uint8') * 255
                 del c
 
+            elif c == 101:  # Prime 'e' para limpar a tela
+                text = 'eraser'
+                if escolha['draw_on_video']:
+                    color = (0, 0, 0)
+                else:
+                    color = (255, 255, 255)
+
+                del c
+
             elif c == 119:  # Prime 'w' para guardar sketch
                 x = datetime.datetime.today()
                 if escolha['draw_on_video']:
@@ -229,7 +235,6 @@ def main():
                 break
     else:
         instrucoes()
-
 
 if __name__ == '__main__':
     main()
