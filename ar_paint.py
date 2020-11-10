@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+
+# --------------------------------------------------
+# A  python script to segment a videocapture to isolate a color.Created by :
+# Alex Valadares,84786
+# Pedro Rolo, 84803
+# Pedro Tavares, 84673
+# PARI, November 2020.
+# --------------------------------------------------
+
 from colorama import Fore,Back,Style
 import argparse
 import cv2
@@ -8,15 +17,16 @@ import datetime
 from time import ctime
 
 # variaveis globais
-ponto_ini = [None, None]
-color=(255,0,0)
-raio=10
+ponto_ini = [None, None]            # Guarda coordenadas do centroide
+color=(255,0,0)                     # Cor default
+raio=10                             # raio default do ponteiro
 
 
 
 
 
 def escolhamodo():
+    # Definicao dos argumentos de entrada, selecao do modo de desenho
     parser = argparse.ArgumentParser(description="PARI AR Paint")
     parser.add_argument('-js',
                         '--json',
@@ -58,30 +68,37 @@ def instrucoes():
     print("if u wanna see this tab again, just press 'H'")
 
 
-def contornos(mask, frame, tela , tela_preta, escolha):
+def printRealColor(frame,gray_tela_preta):
+    # Funcao para adicionar cor no video, sem transparencia
+    _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
+    invert_th = cv2.bitwise_not(th)
+    fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+    return fr
 
+def contornos(mask, frame, tela , tela_preta, escolha):
+    # permite detetar os contornos dos blobs
     _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) != 0:
-
+        # Seleciona o maior blob
         c = max(contours, key=cv2.contourArea)
         area=cv2.contourArea(c)
 
-        if area>250:
-
-
+        if area>250:      # area minima de um blob para nao ser considerado ruido
             x, y, w, h = cv2.boundingRect(c)
 
             #centroide
             X_cm = x + w / 2
             Y_cm = y + h / 2
 
+            # Marcacao do centroide na frame para melhor identificacao do sitio onde se esta a ecrever (ponteiro)
             cv2.circle(frame, (X_cm, Y_cm), raio, (0, 255, 255), -1)
 
+            # chama memoria que guarda a posicao do centroide
             global  ponto_ini
 
+            # Permite iniciar a pintura num ponto qq e nao num ponto fixo e permite a escrita do shake prevention
             if ponto_ini[0] != None:
-
                 cv2.line(tela, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
                 cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
                 ponto_ini = [X_cm, Y_cm]
@@ -89,12 +106,10 @@ def contornos(mask, frame, tela , tela_preta, escolha):
                 ponto_ini = [X_cm, Y_cm]
 
 
-
+            # write do desenho
             aux = cv2.line(tela_preta, (X_cm, Y_cm), (ponto_ini[0], ponto_ini[1]), color, raio)
             gray_tela_preta = cv2.cvtColor(aux, cv2.COLOR_BGR2GRAY)
-            _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
-            invert_th = cv2.bitwise_not(th)
-            fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+            fr = printRealColor(frame,gray_tela_preta)
             fr = cv2.add(fr, aux)
 
             return fr
@@ -103,10 +118,9 @@ def contornos(mask, frame, tela , tela_preta, escolha):
             text_aviso='aproxime da camara o objeto'
             cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
 
+            # write do desenho
             gray_tela_preta = cv2.cvtColor(tela_preta, cv2.COLOR_BGR2GRAY)
-            _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
-            invert_th = cv2.bitwise_not(th)
-            fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+            fr = printRealColor(frame, gray_tela_preta)
             fr = cv2.add(fr, tela_preta)
             if escolha['use_shake_prevention']:
                 ponto_ini = [None, None]
@@ -119,10 +133,9 @@ def contornos(mask, frame, tela , tela_preta, escolha):
         text_aviso = 'coloque o objeto no campo de visao da camara'
         cv2.putText(frame, text_aviso, (40, 440), 1, 1, (255, 255, 255))
 
+        # write do desenho
         gray_tela_preta = cv2.cvtColor(tela_preta, cv2.COLOR_BGR2GRAY)
-        _, th = cv2.threshold(gray_tela_preta, 10, 255, cv2.THRESH_BINARY)
-        invert_th = cv2.bitwise_not(th)
-        fr = cv2.bitwise_and(frame, frame, mask=invert_th)
+        fr = printRealColor(frame, gray_tela_preta)
         fr = cv2.add(fr, tela_preta)
         if escolha['use_shake_prevention']:
             ponto_ini = [None, None]
@@ -138,23 +151,30 @@ def main():
         instrucoes()
 
     elif escolha['json']:
+        # importa os valores definidos no color_segmenter
         limites = json.load(open("limits.json"))
 
+        # faz a captura de video
         cap = cv2.VideoCapture(0)
         name = 'Original'
         cv2.namedWindow(name, cv2.WINDOW_AUTOSIZE)
 
+        # Cria as variaveis para as telas necessarias
         tela=None
         tela_preta=None
 
         text = 'Azul'
         while True:
             global color, raio
+            # Faz a leitura da captura de video
             _, frame = cap.read()
             frame = cv2.flip(frame , 1)
 
-            if tela is None: tela = np.ones(frame.shape, dtype=np.uint8)*255
-            if tela_preta is None: tela_preta = np.zeros(frame.shape, dtype=np.uint8)
+            # Cria as telas de pintura para os diferentes modos
+            if tela is None:
+                tela = np.ones(frame.shape, dtype=np.uint8)*255
+            if tela_preta is None:
+                tela_preta = np.zeros(frame.shape, dtype=np.uint8)
 
             # vai buscar os valore dos limites
             lim_inf = np.array([int(limites['B']['min']), int(limites['G']['min']), int(limites['R']['min'])])
@@ -166,24 +186,24 @@ def main():
 
             filtro = np.ones((3, 3), np.uint8)
             mask = cv2.morphologyEx(mask_orige, cv2.MORPH_OPEN, filtro)
-            #mask= cv2.morphologyEx(mask, cv2.MORPH_CLOSE,filtro)
 
             # encotra o bloco maior
             fr=contornos(mask,frame,tela, tela_preta,escolha)
-
 
             if escolha['draw_on_video']:
                 cv2.imshow('AR_Paint',fr)   # video desenhado
             else:
                 cv2.imshow('tela', tela)
 
+            # Escrita de informacoes relevantes na frame
             cv2.putText(frame, text, (40, 40), 1, 3, color)
+
+            # Faz display do stream de video e do Threshold
             cv2.imshow(name, frame)
             cv2.imshow('Threshold', mask)
             c = cv2.waitKey(1)
 
             # Criar mask onde se pinta
-
             if c == 114:  # Prime 'r' para riscar red
                 text = 'red'
                 color=(0,0,255)
@@ -213,7 +233,7 @@ def main():
                 tela_preta = np.zeros(frame.shape, 'uint8') * 255
                 del c
 
-            elif c == 101:  # Prime 'e' para limpar a tela
+            elif c == 101:  # Prime 'e' para usar borracha
                 text = 'eraser'
                 if escolha['draw_on_video']:
                     color = (0, 0, 0)

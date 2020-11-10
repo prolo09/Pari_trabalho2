@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+
 # --------------------------------------------------
 # A  python script to segment a videocapture to isolate a color.Created by :
 # Alex Valadares,84786
-# Pedro Rolo,
-# Pedro Tavares,
+# Pedro Rolo, 84803
+# Pedro Tavares, 84673
 # PARI, November 2020.
 # --------------------------------------------------
+
 import cv2
 import argparse
 import json
@@ -55,8 +57,9 @@ def main():
     cv2.createTrackbar('max R/V', windon_name, 200, 255, nothing)
 
     while True:
-        _, og = cap.read()
         _, frame = cap.read()
+        # espelha a imagem para ser mais intuitivo
+        frame = cv2.flip(frame, 1)
 
         if escolha["hsv"]:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -82,11 +85,11 @@ def main():
             frame_com_cor = cv2.bitwise_and(frame, frame, mask=mask)
             cv2.imshow('Threshold', mask)
             cv2.imshow(windon_name, frame_com_cor)
-            cv2.imshow(Window_original,og)
+            cv2.imshow(Window_original,frame)
         else:
             # para imprimir caso queira isolar a cor e mostrando
             cv2.imshow(windon_name, mask)
-            cv2.imshow(Window_original, og)
+            cv2.imshow(Window_original, frame)
 
         key = cv2.waitKey(1)
         if key == 113:
